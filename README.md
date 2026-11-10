@@ -1,10 +1,16 @@
-# Philadelphia baseline checkpoint
+# Philadelphia Property Assessments
 
-Submit only `outputs/baseline.txt` and `outputs/baseline.png`. The text follows the required template and stays under 500 words. The PNG is one OLS-versus-City RMSE plot with error bars. The completed simulation check is reported in the text.
+Compare OLS home-price predictions with Philadelphia's assessed market values using single-family property sales from 2022-2024. A simulation examines how grouping by actual sale price can create misleading valuation-ratio patterns.
 
-Replace the group/member placeholders and add a shareable code URL before submitting. Use first names only. The member whose last name comes first alphabetically uploads for the group.
+## Data and method
 
-The runner implements parcel matching, screened single-family sales, log-price OLS, five-fold parcel-grouped validation, a common 2024 City benchmark, and 2,000 paired parcel-bootstrap resamples. Ridge and random forest are outside this checkpoint.
+The public City data in `csvs/` contains property characteristics, recorded transfers, and annual assessment history. `provenance.json` records the source queries and extraction date.
+
+The pipeline joins records by parcel number and screens for likely market sales. It fits OLS to log sale price using 2022-2023 sales, with five-fold cross-validation grouped by property. Preprocessing is learned within each training fold. Predictions are evaluated against 2024 sale prices, and City assessments are compared on the same sales.
+
+Accuracy is measured with dollar MAE and RMSE. Confidence intervals use 2,000 paired parcel-bootstrap resamples. The random seed is 5420.
+
+## Run
 
 ```sh
 python3 -m venv .venv
@@ -12,8 +18,22 @@ python3 -m venv .venv
 .venv/bin/python run_analysis.py
 ```
 
-`run_analysis.py` computes the results and saves all numbers/checks in one readable `results.txt` log. It also saves the simple `outputs/baseline.png`. The write-up `outputs/baseline.txt` is a normal, manually edited file; the script does not generate or overwrite it.
+Run these commands from the project directory.
 
-Input CSVs and source metadata are in `csvs/`. The script writes no PDF, CSV output, or JSON results cache.
+## Files
 
-Current features are a 2026 snapshot; retained sales are screened likely market transactions. Both limitations appear in the submission. Synthetic validity checks: `.venv/bin/python -m unittest test_analysis`.
+- `results.txt`: cohort counts, matching rates, CV scores, test metrics, confidence intervals, and simulation checks.
+- `outputs/baseline.png`: OLS-versus-City test RMSE with 95% confidence intervals.
+- `outputs/baseline.txt`: manually maintained analysis summary.
+- `cohort.py`: record matching, transaction screening, and feature preparation.
+- `simulation.py`: the known-value-plus-noise simulation.
+
+## Checks
+
+```sh
+.venv/bin/python -B -m unittest test_analysis
+```
+
+## Limitations
+
+Property features and classifications come from a 2026 snapshot. Historical assessments may include later revisions. Transaction screening identifies likely market sales but cannot independently verify arm's-length status, so the analysis is retrospective.

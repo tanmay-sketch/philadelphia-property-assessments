@@ -1,0 +1,35 @@
+# Accuracy vs. Fairness in Philadelphia Property Assessments
+
+## Group
+
+5420 Group; Ssaumya Jaiswal, Tanmay Grandhisiri.
+
+## Changes since the proposal
+The checkpoint uses log-price OLS, parcel-grouped CV, a same-sale City comparison, and an oracle simulation of the sale-price-bin artifact. City assessments are excluded from predictors.
+
+## Data
+Loaded 583,716 properties, 524,331 transfer records, and annual assessments. Parcel matching retained 49,468 likely market sales from 2022-2024. Among single-property deeds, 81,510/81,617 with nonblank keys matched (99.87%); coverage including missing keys was 88.40%.
+
+We retained regular single-property deeds and current single-family properties. We dropped unmatched keys, prices at or below $1,000, discrepancy flags, nonzero other consideration, missing transaction dates, and construction years after sale. The output is sale price in dollars; there are 10 original inputs before encoding.
+
+## Split
+Training: 34,127 sales from 2022-2023. Held-out 2024: 15,341; 15,254 have usable City assessments. Five training folds group repeat sales by parcel. Imputation, scaling, encoding, and retransformation are fitted within each fold. Seed: 5420. Specifications were fixed before evaluating 2024; no test-based retuning.
+
+## Baseline
+OLS predicts log price using livable area, lot area, age, bedrooms, bathrooms, stories, interior/exterior condition, quality, and ZIP. Areas receive log1p transforms. Training-only smearing converts predictions to dollars. OLS has no tuning parameter, so the grid is not applicable; five-fold CV validates the fixed specification.
+
+## Result
+Grouped-CV RMSE across 34,127 training-period sales was $116,769: the square root of the average squared dollar error, using one held-out-fold prediction per sale. This is not the 2024 test score or a total error across all sales.
+
+On the same 15,254 test sales, OLS RMSE was $161,352 (95% CI: $126,945-$206,682); City RMSE was $159,866 ($130,485-$201,526). OLS MAE was $77,343; City MAE was $79,854. Intervals use 2,000 paired parcel-bootstrap resamples, keeping repeat sales together and predictions fixed.
+
+The simulation check confirmed that noisy actual-price bins can make a perfect predictor appear regressive. Grouping by oracle value removed the artificial slope in this simulation. baseline.png shows only the OLS-versus-City error comparison.
+
+## Issues found
+Features and single-family status are a 2026 snapshot. Historical assessments may contain later revisions. Room count was omitted because approximately 94% was missing. Screening identifies likely market sales, not independently verified arm's-length transactions.
+
+## Next steps
+Before November 16, [Member 1] will review sale validation, ridge and fairness summaries; [Member 2] will finalize random forest and charts. Use grouped training CV without retuning on 2024 outcomes.
+
+## Code
+[Add a shareable notebook or repository URL before submitting.]

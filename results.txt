@@ -1,0 +1,180 @@
+Philadelphia OLS baseline: results log
+
+Source record counts
+--------------------
+transfers_union_date_window: 524,331
+properties: 583,716
+assessment_history: 1,731,429
+
+Sale filters
+------------
+                                       rule  before  removed  remaining
+                               regular DEED  524331   417226     107105
+                         property_count = 1  107105    14902      92203
+                   nonblank OPA account key   92203    10586      81617
+          unique current property key match   81617      107      81510
+  current category_code = 1 (single family)   81510    12534      68976
+               total_consideration > $1,000   68976    18186      50790
+               discrepancy explicitly False   50790      764      50026
+       other_consideration is zero or blank   50026      339      49687
+nonmissing valid document_date; no fallback   49687        5      49682
+                 document_date in 2022-2024   49682        0      49682
+       known year_built not after sale year   49682      214      49468
+
+Parcel matching
+---------------
+denominator_scope: Downloaded union of document-date or display-date 2022-2024 windows; before other screens
+all_single_parcel_deeds: 92203
+with_nonblank_key: 81617
+matched: 81510
+rate_all: 0.8840276346756614
+rate_nonblank_keys: 0.9986889986154845
+
+Final cohort
+------------
+sales: 49468
+unique_parcels: 45327
+rows_by_year: {'2022': 19030, '2023': 15097, '2024': 15341}
+train_sales: 34127
+test_sales: 15341
+train_unique_parcels: 32071
+test_unique_parcels: 14826
+parcels_in_both_train_and_test: 1570
+test_sales_on_previously_seen_parcels: 1597
+test_sales_on_unseen_parcels: 13744
+parcels_with_multiple_sales: 3950
+repeated_sale_rows_beyond_one_per_parcel: 4141
+
+City benchmark coverage
+-----------------------
+eligible_sales: 49468
+with_positive_unique_same_year_value: 49184
+missing_nonpositive_or_conflicting_value: 284
+available_rows_by_sale_year: {'2022': 18901, '2023': 15029, '2024': 15254}
+missing_rows_by_sale_year: {'2022': 129, '2023': 68, '2024': 87}
+policy: City availability does not restrict model training or all-sale evaluation; use the same nonmissing subset for City comparisons.
+
+property key audit
+------------------
+exact_duplicate_rows_removed: 0
+conflicting_parcel_keys_excluded: 0
+conflicting_rows_excluded: 0
+blank_key_rows_excluded: 0
+
+transfer duplicates
+-------------------
+exact_rows_removed: 0
+ambiguous_or_blank_record_id_rows_removed: 0
+
+assessment key audit
+--------------------
+exact_duplicate_rows_removed: 7
+conflicting_parcel_year_pairs_excluded: 3
+conflicting_rows_excluded: 6
+rows_by_year_before_conflict_exclusion: {'2022': 575057, '2023': 577500, '2024': 578865}
+
+feature missingness
+-------------------
+total_livable_area: {'n': 4, 'fraction': 8.086035416835126e-05}
+total_area: {'n': 22, 'fraction': 0.0004447319479259319}
+age: {'n': 3, 'fraction': 6.064526562626344e-05}
+number_of_bedrooms: {'n': 2256, 'fraction': 0.045605239750950106}
+number_of_bathrooms: {'n': 3513, 'fraction': 0.0710156060483545}
+number_stories: {'n': 7, 'fraction': 0.0001415056197946147}
+interior_condition: {'n': 4, 'fraction': 8.086035416835126e-05}
+exterior_condition: {'n': 4, 'fraction': 8.086035416835126e-05}
+quality_grade: {'n': 1356, 'fraction': 0.027411660063071077}
+zip_code: {'n': 0, 'fraction': 0.0}
+
+price threshold sensitivity over 10000
+--------------------------------------
+sales: 49135
+rows_by_year: {'2022': 18894, '2023': 14990, '2024': 15251}
+removed_from_main_cohort: 333
+
+Method
+------
+Fixed log-price OLS; no tuning grid. Five parcel-grouped folds.
+Seed: 5420
+Features: total_livable_area, total_area, age, number_of_bedrooms, number_of_bathrooms, number_stories, interior_condition, exterior_condition, quality_grade, zip_code
+Area transform: log1p. Numeric imputation/scaling and category encoding within each fold.
+Training-only smearing factor: 1.1139670247
+scikit-learn: 1.9.1
+2024 used for tuning: False
+
+CV fold sizes
+-------------
+ fold  fit_n  validation_n  overlapping_parcels
+    1  27301          6826                    0
+    2  27301          6826                    0
+    3  27302          6825                    0
+    4  27302          6825                    0
+    5  27302          6825                    0
+
+Pooled out-of-fold scores: 2022-2023, dollars
+---------------------------------------------
+model          rmse          mae
+  OLS 116768.800826 72476.482678
+
+Held-out scores: same 2024 sales, dollars
+-----------------------------------------
+model metric     n      estimate        ci_low       ci_high
+  OLS    MAE 15254  77343.022434  75195.501041  79760.542072
+  OLS   RMSE 15254 161352.014645 126945.447391 206681.846660
+ City    MAE 15254  79853.877734  77790.108986  82109.473176
+ City   RMSE 15254 159866.440008 130484.967105 201525.541634
+
+Paired OLS minus City RMSE, dollars
+-----------------------------------
+model reference          metric    estimate        ci_low      ci_high
+  OLS      City RMSE difference 1485.574638 -11779.326221 16631.571833
+
+Uncertainty
+-----------
+2000 paired parcel-cluster bootstrap replicates; 2.5th and 97.5th percentiles.
+Repeat sales stay together; predictions remain fixed. Conditional on fitted models.
+
+Simulation
+----------
+X ~ Normal(0,1); m(X)=exp(12+0.5X); Y=m(X)*exp(epsilon-sigma^2/2)
+Seed: 5420; observations per noise level: 50000
+Zero-noise ratios equal one: True
+
+Simulation mean-ratio checks
+----------------------------
+   sigma     n  expected_mean_individual_ratio  observed_mean_individual_ratio  validation_tolerance  ratio_of_sums
+0.000000 50000                        1.000000                        1.000000              0.002000       1.000000
+0.100000 50000                        1.010050                        1.010573              0.002264       1.000486
+0.300000 50000                        1.094174                        1.093514              0.007508       0.998906
+0.500000 50000                        1.284025                        1.293838              0.015302       1.005319
+
+Simulation ratios: lowest and highest quintiles
+-----------------------------------------------
+quintile             lowest  highest
+sigma grouping                      
+0.0   actual_price 1.000000 1.000000
+      oracle_value 1.000000 1.000000
+0.1   actual_price 1.038580 0.982554
+      oracle_value 1.010877 1.011424
+0.3   actual_price 1.346296 0.872601
+      oracle_value 1.094043 1.089741
+0.5   actual_price 2.029901 0.752556
+      oracle_value 1.296511 1.291056
+
+RMSE definition
+---------------
+sqrt(mean((predicted price - sale price)^2)).
+CV uses 34,127 held-out-fold predictions from 2022-2023.
+It is a root-mean-square error in dollars, not a total dollar loss across the dataset.
+
+Limitations
+-----------
+Retrospective comparison: property features are a 2026-11-09 current snapshot, not verified sale-date features.
+Screened likely-market sales are not independently validated arm's-length transactions.
+Main price is total_consideration; source field definitions and discrepancy semantics remain unverified.
+Main date is document_date with no fallback; sale-year City market_value comes from historical assessments downloaded in 2026.
+Eligible sales lacking a positive unique historical City value remain in the cohort with city_value missing; City comparisons must use a common nonmissing subset.
+Historical assessment values may reflect later corrections; original assessment publication vintage is unavailable.
+A >$1,000 threshold retains low-price transactions; >$10,000 sensitivity counts are reported without outcome-based ratio filtering.
+Missing feature values remain missing for training-fold imputation; zero bedrooms, bathrooms and stories are treated as suspect missing data.
+All repeated sales are retained; parcel IDs are for internal grouping only and excluded from predictor features and published output.
